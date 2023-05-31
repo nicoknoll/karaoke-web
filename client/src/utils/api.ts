@@ -27,3 +27,8 @@ export const randomSongs = async (): Promise<IVideo[]> => {
 export const getVideo = async (id: number): Promise<IVideo> => {
     return await call(`videos/${id}`);
 };
+
+
+export const refreshIndex = async () => {
+    await call('videos/refresh');
+};

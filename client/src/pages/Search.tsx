@@ -5,7 +5,7 @@ import { classnames } from '../utils/classnames';
 import VideoItem from '../components/VideoItem';
 import Key from '../components/Key';
 import SearchField from '../components/SearchField';
-import { IVideo, randomSongs, searchSongs } from '../utils/api';
+import { IVideo, randomSongs, refreshIndex, searchSongs } from '../utils/api';
 
 const Search = () => {
     const navigate = useNavigate();
@@ -107,6 +107,17 @@ const Search = () => {
                 // clear search
                 e.preventDefault();
                 updateSearchValue('');
+            } else if (e.key === 'r' && (e.metaKey || e.ctrlKey)) {
+                // refresh index, then reload
+                e.preventDefault();
+                setLoading(true);
+                refreshIndex().then(() => {
+                    updateSearchValue('');
+                }).catch((err) => {
+                    setError(err.message);
+                }).finally(() => {
+                    setLoading(false);
+                });
             }
         };
 
@@ -183,6 +194,12 @@ const Search = () => {
                         </div>
                     )}
 
+                    {!loading && !error && videos.length === 0 && (
+                        <div className="flex flex-col items-center justify-center gap-4 absolute w-full h-full text-neutral-600">
+                            <span className="text-2xl font-medium">Keine Treffer</span>
+                        </div>
+                    )}
+
 
                     <div className="absolute top-0 z-10 h-10 w-full bg-gradient-to-b from-neutral-900 to-transparent"></div>
 
@@ -193,7 +210,7 @@ const Search = () => {
                         )}
                         onWheel={handleListScroll}
                     >
-                        {videos.map((video: any, index: number) => (
+                        {!loading && !error && videos.map((video: any, index: number) => (
                             <div className="snap-center">
                                 <VideoItem
                                     key={video.id}
