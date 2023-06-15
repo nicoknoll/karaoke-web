@@ -188,7 +188,7 @@ const Search = () => {
                         </div>
                     )}
 
-                    {error && (
+                    {!loading && error && (
                         <div className="flex flex-col items-center justify-center gap-4 absolute w-full h-full text-neutral-600">
                             <span className="text-2xl font-medium">Fehler: {error}</span>
                         </div>

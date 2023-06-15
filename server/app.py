@@ -39,15 +39,21 @@ def refresh_cache():
     videos = []
     for i, file_path in enumerate(get_video_files()):
         file = os.path.basename(file_path)
-        info = ffmpeg.probe(file_path)
-        duration = str(timedelta(seconds=round(float(info['format']['duration'])))).split(":", 1)[1]
+
+        #info = ffmpeg.probe(file_path)
+        #duration = str(timedelta(seconds=round(float(info['format']['duration'])))).split(":", 1)[1]
+
+        thumbnail = os.path.join(os.path.dirname(file_path), f"{os.path.basename(os.path.splitext(file_path)[0])}.jpg")
+        if not os.path.exists(thumbnail):
+            thumbnail = ""
 
         videos.append(
             {
                 "id": i,
-                "title": file.split(".")[0],
-                "duration": duration,
-                "thumbnail": "", #"./videos/" + os.path.basename(thumbnail),
+                "title": os.path.splitext(file)[0],
+                "duration": None, # duration,
+                "thumbnail": thumbnail,
+                "thumbnail_url": thumbnail and f"{SERVER_URL}/api/videos/{i}/thumbnail",
                 "url": f"{SERVER_URL}/api/videos/{i}/stream",
                 "file": file,
                 "path": file_path,
@@ -107,6 +113,14 @@ def api_video_stream_view(video_id):
     video = VIDEO_CACHE[video_id] if video_id < len(VIDEO_CACHE) else {}
     directory = os.path.dirname(video["path"])
     return send_from_directory(directory, video["file"])
+
+
+@app.route('/api/videos/<int:video_id>/thumbnail')
+@ensure_cache
+def api_video_thumbnail_view(video_id):
+    video = VIDEO_CACHE[video_id] if video_id < len(VIDEO_CACHE) else {}
+    directory = os.path.dirname(video["thumbnail"])
+    return send_from_directory(directory, os.path.basename(video["thumbnail"]))
 
 
 @app.after_request
